@@ -6,6 +6,7 @@
 
 #include "Alloc.h"
 #include "Constants.h"
+#include "v6ap.h"
 #include "CustomLevels.h"
 #include "Editor.h"
 #include "Entity.h"
@@ -1880,29 +1881,10 @@ void scriptclass::run(void)
             }
             else if (words[0] == "foundtrinket")
             {
-                music.silencedasmusik();
-                music.playef(Sound_TRINKET);
-
                 size_t trinket = ss_toi(words[1]);
-                if (trinket < SDL_arraysize(obj.collect))
-                {
-                    obj.collect[trinket] = true;
+                if (trinket == 18) {
+                    V6AP_SendItem(18); //NPC Trinket gets special case
                 }
-
-                graphics.textboxremovefast();
-
-                graphics.createtextboxflipme("", 50, 85, TEXT_COLOUR("gray"));
-                graphics.textboxprintflags(PR_FONT_INTERFACE);
-                graphics.textboxcenterx();
-                graphics.textboxtranslate(TEXTTRANSLATE_FUNCTION, foundtrinket_textbox1);
-                graphics.textboxapplyposition();
-
-                graphics.createtextboxflipme("", 50, 95, TEXT_COLOUR("gray"));
-                graphics.textboxprintflags(PR_FONT_INTERFACE);
-                graphics.textboxcenterx();
-                graphics.textboxindex(graphics.textboxes.size() - 2);
-                graphics.textboxtranslate(TEXTTRANSLATE_FUNCTION, foundtrinket_textbox2);
-                graphics.textboxapplyposition();
 
                 if (!game.backgroundtext)
                 {

@@ -5571,15 +5571,9 @@ bool scriptclass::load(const std::string& name)
         "position(blue,below)",
         "speak_active",
 
-        "endtext",
-        "delay(30)",
-
         //found a trinket!
         "foundtrinket(18)",
-        "endtext",
-        "musicfadein",
 
-        "delay(30)",
         "createentity(136,80,22,18,0)",
 
         "squeak(blue)",

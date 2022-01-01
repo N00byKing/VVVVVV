@@ -36,7 +36,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       with:
-        submodules: true
+        submodules: 'recursive'
 
     - name: Install dependencies
       run: brew install ninja sdl2
@@ -47,53 +47,37 @@ jobs:
         cmake -GNinja ..
     - name: Build (default version)
       run: ninja -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (official)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -DOFFICIAL_BUILD=ON ..
-    - name: Build (official)
-      run: |
-        ninja -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (M&P)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -DOFFICIAL_BUILD=OFF -DMAKEANDPLAY=ON ..
-    - name: Build (M&P)
-      run: ninja -C ${SRC_DIR_PATH}/build
+    - name: Create Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: V6AP-macos
+        path: ${{env.SRC_DIR_PATH}}/build/VVVVVV
 
   build-lin:
-    name: Build (Steam Linux Runtime Sniper)
+    name: Build (ubuntu-latest)
 
     runs-on: ubuntu-latest
-    container: registry.gitlab.steamos.cloud/steamrt/sniper/sdk:beta
+
+    env:
+      CXXFLAGS: -I/usr/local/include/SDL2
+      LDFLAGS: -L/usr/local/lib
 
     steps:
     - uses: actions/checkout@v4
       with:
-        submodules: true
+        submodules: 'recursive'
 
     - name: CMake configure (default version)
       run: |
         mkdir ${SRC_DIR_PATH}/build && cd ${SRC_DIR_PATH}/build
         cmake -G Ninja ..
     - name: Build (default version)
-      run: ninja -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (official)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -G Ninja -DOFFICIAL_BUILD=ON ..
-    - name: Build (official)
-      run: ninja -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (M&P)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -G Ninja -DOFFICIAL_BUILD=OFF -DMAKEANDPLAY=ON ..
-    - name: Build (M&P)
-      run: ninja -C ${SRC_DIR_PATH}/build
+      run: make -j $(nproc) -C ${SRC_DIR_PATH}/build
+    - name: Create Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: V6AP-linux
+        path: ${{env.SRC_DIR_PATH}}/build/VVVVVV
 
   build-win:
     name: Build (windows-latest)
@@ -106,7 +90,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       with:
-        submodules: true
+        submodules: 'recursive'
 
     - name: Cache SDL
       id: cache-windows-sdl
@@ -142,31 +126,22 @@ jobs:
         $env:LDFLAGS =  "/LIBPATH:C:\SDL2-$env:SDL_VERSION\lib\x86 "
         cmake -G "Visual Studio 17 2022" -A Win32 `
               -DSDL2_INCLUDE_DIRS="C:\SDL2-$env:SDL_VERSION\include" `
-              -DSDL2_LIBRARIES="SDL2;SDL2main" ..
-
-    - name: CMake configure (default version)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake ..
+              -DSDL2_LIBRARIES="SDL2;SDL2main" `
+              -DUSE_ZLIB=OFF `
+              -DCMAKE_BUILD_TYPE=Release ..
     - name: Build (default version)
       run: |
         cd $env:SRC_DIR_PATH/build
-        cmake --build .
+        cmake --build . --config Release
 
-    - name: CMake configure (official)
+    - name: Create Artifact Folder
       run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake -DOFFICIAL_BUILD=ON ..
-    - name: Build (official)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake --build .
-
-    - name: CMake configure (M&P)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake -DOFFICIAL_BUILD=OFF -DMAKEANDPLAY=ON ..
-    - name: Build (M&P)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake --build .
+        mkdir artifact
+        copy ${{env.SRC_DIR_PATH}}/build/Release/VVVVVV.exe artifact
+        copy ${{env.SRC_DIR_PATH}}/build/apcppout/Release/APCpp.dll artifact
+    - name: Create Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: V6AP-win
+        path: |
+          artifact/*

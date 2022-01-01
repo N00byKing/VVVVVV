@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 
+#include "v6ap.h"
 #include "CustomLevels.h"
 #include "Font.h"
 #include "Game.h"
@@ -1559,7 +1560,8 @@ void entityclass::createentity(int xp, int yp, int t, int meta1, int meta2, int 
 
         //Check if it's already been collected
         entity.para = meta1;
-        if (!INBOUNDS_ARR(meta1, collect) || collect[meta1]) return;
+        if (meta1 >= V6AP_NUM_CHECKS) return;
+        if (V6AP_Locations()[meta1]) return;
         break;
     case 10: //Savepoint
         entity.rule = 3;
@@ -2708,25 +2710,11 @@ bool entityclass::updateentities( int i )
             //wait for collision
             if (entities[i].state == 1)
             {
-                if (INBOUNDS_ARR(entities[i].para, collect))
+                V6AP_SendItem(entities[i].para);
+                if (game.trinkets() > game.stat_trinkets && !map.custommode)
                 {
-                    collect[(int) entities[i].para] = true;
-                }
-
-                if (game.intimetrial)
-                {
-                    music.playef(Sound_NEWRECORD);
-                }
-                else
-                {
-                    game.setstate(1000);
-                    if(music.currentsong!=-1) music.silencedasmusik();
-                    music.playef(Sound_TRINKET);
-                    if (game.trinkets() > game.stat_trinkets && !map.custommode)
-                    {
-                        game.stat_trinkets = game.trinkets();
-                        game.savestatsandsettings();
-                    }
+                    game.stat_trinkets = game.trinkets();
+                    game.savestatsandsettings();
                 }
 
                 return disableentity(i);

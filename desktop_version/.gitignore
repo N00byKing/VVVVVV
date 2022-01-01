@@ -1,5 +1,6 @@
 # Build objects
 build/
+.cache/
 flibitBuild/
 CMakeCache.txt
 CMakeFiles/
