@@ -51,7 +51,10 @@ jobs:
         submodules: 'recursive'
 
     - name: Install libsdl2-mixer-dev
-      run: sudo apt-get install -y libsdl2-mixer-dev
+      run: |
+        sudo apt-get update -y
+        sudo apt-get upgrade -y
+        sudo apt-get install -y libsdl2-mixer-dev
 
     - name: CMake configure (default version)
       run: |
