@@ -77,7 +77,6 @@ endif()
 # Source Lists
 set(VVV_SRC
     src/v6ap.cpp
-    src/v6ap.h
     src/BinaryBlob.cpp
     src/BlockV.cpp
     src/Ent.cpp
