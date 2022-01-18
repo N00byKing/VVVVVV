@@ -17,9 +17,9 @@ jobs:
       LDFLAGS: -L/usr/local/lib
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
-        submodules: 'true'
+        submodules: 'recursive'
 
     - name: Install dependencies
       run: brew install ninja sdl2 sdl2_mixer
@@ -46,9 +46,9 @@ jobs:
       LDFLAGS: -L/usr/local/lib
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
-        submodules: 'true'
+        submodules: 'recursive'
 
     - name: Install libsdl2-mixer-dev
       run: sudo apt-get install -y libsdl2-mixer-dev
@@ -71,9 +71,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
-        submodules: 'true'
+        submodules: 'recursive'
 
     - name: Install dependencies (Windows)
       run: |
