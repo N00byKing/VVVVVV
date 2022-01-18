@@ -97,11 +97,11 @@ jobs:
       run: |
         cd $env:SRC_DIR_PATH/build
         cmake --build . --config Release
-    - name: bruh
-      run: ls -l ${{env.SRC_DIR_PATH}}/build/
     - name: Create Build Artifact
       uses: actions/upload-artifact@v2
       with:
         name: V6AP-win
-        path: ${{env.SRC_DIR_PATH}}/build/Release/VVVVVV.exe
+        path: |
+          ${{env.SRC_DIR_PATH}}/build/Release/VVVVVV.exe
+          ${{env.SRC_DIR_PATH}}/build/bin/Release/APCpp.dll
 
