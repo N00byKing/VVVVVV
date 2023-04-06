@@ -21,8 +21,8 @@ std::map<int,int> map_costs;
 
 std::map<int,int> map_music;
 
-void V6AP_RecvItem(int,bool);
-void V6AP_CheckLocation(int);
+void V6AP_RecvItem(int64_t,bool);
+void V6AP_CheckLocation(int64_t);
 void none() {}
 
 void V6AP_SetDoorCost(int cost) {
@@ -31,7 +31,7 @@ void V6AP_SetDoorCost(int cost) {
 
 void V6AP_SetAreaMap(std::map<int,int> map) {
     map_entrances = map;
-    for (int i = 0; i < map.size(); i++) {
+    for (size_t i = 0; i < map.size(); i++) {
         map_exits[map_entrances.at(i)] = i;
     }
 }
@@ -45,7 +45,7 @@ void V6AP_SetCostMap(std::map<int,int> map) {
 }
 
 void V6AP_ResetItems() {
-    for (int i = 0; i < V6AP_NUM_CHECKS; i++) {
+    for (size_t i = 0; i < V6AP_NUM_CHECKS; i++) {
         location_checks[i] = false;
         trinketsCollected[i] = false;
         trinketsPending[i] = false;
@@ -87,13 +87,13 @@ void V6AP_SendItem(int idx) {
 }
 
 bool V6AP_ItemPending() {
-    for (int i = 0; i < V6AP_NUM_CHECKS; i++) {
+    for (size_t i = 0; i < V6AP_NUM_CHECKS; i++) {
         if (trinketsPending[i]) return true;
     }
     return false;
 }
 
-void V6AP_RecvItem(int item_id, bool notify) {
+void V6AP_RecvItem(int64_t item_id, bool notify) {
     bool* increment = notify ? trinketsPending : trinketsCollected;
     switch(item_id) {
         default:
@@ -102,7 +102,7 @@ void V6AP_RecvItem(int item_id, bool notify) {
     }
 }
 
-void V6AP_CheckLocation(int loc_id) {
+void V6AP_CheckLocation(int64_t loc_id) {
     location_checks[loc_id - V6AP_ID_OFFSET] = true;
 }
 
@@ -123,7 +123,7 @@ void V6AP_StoryComplete() {
 
 int V6AP_GetTrinkets() {
     int c = 0;
-    for (int i = 0; i < V6AP_NUM_CHECKS; i++) {
+    for (size_t i = 0; i < V6AP_NUM_CHECKS; i++) {
         if (trinketsCollected[i]) c++;
     }
     return c;
@@ -150,8 +150,9 @@ const bool* V6AP_Trinkets() {
 }
 
 void printMsg(std::vector<std::string> msg) {
+    if (msg.size() == 0) return;
     graphics.createtextbox(msg.at(0), -7, -7, 174, 174, 174);
-    for (unsigned int i = 1; i < msg.size(); i++) {
+    for (size_t i = 1; i < msg.size(); i++) {
         graphics.addline(msg.at(i));
     }
     graphics.textboxtimer(60);
@@ -159,8 +160,18 @@ void printMsg(std::vector<std::string> msg) {
 
 void V6AP_PrintNext() {
     if (!AP_IsMessagePending()) return;
-    std::vector<std::string> msg = AP_GetLatestMessage();
-    printMsg(msg);
+    AP_Message* msg = AP_GetLatestMessage();
+    std::vector<std::string> msg_vec;
+    if (msg->type == AP_MessageType::ItemSend) {
+        AP_ItemSendMessage* o_msg = static_cast<AP_ItemSendMessage*>(msg);
+        msg_vec.push_back(o_msg->item + " was sent");
+        msg_vec.push_back("to " + o_msg->recvPlayer);
+    } else if (msg->type == AP_MessageType::ItemRecv) {
+        AP_ItemRecvMessage* o_msg = static_cast<AP_ItemRecvMessage*>(msg);
+        msg_vec.push_back("Got" + o_msg->item);
+        msg_vec.push_back("From " + o_msg->sendPlayer);
+    }
+    printMsg(msg_vec);
     AP_ClearLatestMessage();
 }
 
