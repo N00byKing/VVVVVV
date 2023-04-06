@@ -48,7 +48,7 @@ jobs:
     - name: Build (default version)
       run: ninja -C ${SRC_DIR_PATH}/build
     - name: Create Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: V6AP-macos
         path: ${{env.SRC_DIR_PATH}}/build/VVVVVV
@@ -74,7 +74,7 @@ jobs:
     - name: Build (default version)
       run: make -j $(nproc) -C ${SRC_DIR_PATH}/build
     - name: Create Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: V6AP-linux
         path: ${{env.SRC_DIR_PATH}}/build/VVVVVV
@@ -140,7 +140,7 @@ jobs:
         copy ${{env.SRC_DIR_PATH}}/build/Release/VVVVVV.exe artifact
         copy ${{env.SRC_DIR_PATH}}/build/apcppout/Release/APCpp.dll artifact
     - name: Create Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: V6AP-win
         path: |
