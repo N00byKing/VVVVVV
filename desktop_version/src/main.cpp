@@ -36,6 +36,8 @@
 #include "UtilityClass.h"
 #include "Vlogging.h"
 
+#include "v6ap.h"
+
 scriptclass script;
 
 std::vector<CustomEntity> customentities;
@@ -374,6 +376,9 @@ int main(int argc, char *argv[])
     bool open_console = false;
 #endif
 
+    //V6AP
+    std::string ip = "", name = "", passwd = "", ap_file = "";
+
     vlog_init();
 
     for (int i = 1; i < argc; ++i)
@@ -537,6 +542,30 @@ int main(int argc, char *argv[])
         {
             seed_use_sdl_getticks = true;
         }
+        else if (ARG("-v6ap_name"))
+        {
+            ARG_INNER({
+                name = argv[i+1]; i++;
+            })
+        }
+        else if (ARG("-v6ap_ip"))
+        {
+            ARG_INNER({
+                ip = argv[i+1]; i++;
+            })
+        }
+        else if (ARG("-v6ap_passwd"))
+        {
+            ARG_INNER({
+                passwd = argv[i+1]; i++;
+            })
+        }
+        else if (ARG("-v6ap_file"))
+        {
+            ARG_INNER({
+                ap_file = argv[i+1]; i++;
+            })
+        }
 #undef ARG_INNER
 #undef ARG
         else
@@ -561,6 +590,11 @@ int main(int argc, char *argv[])
 
     /* We already do the button swapping in ButtonGlyphs, disable SDL's swapping */
     SDL_SetHintWithPriority(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS, "0", SDL_HINT_OVERRIDE);
+
+    if (name == "" && ap_file == "") {
+        vlog_error("V6AP: You need to at least specify Name (For MultiWorld) or Seed Filename (For Singleplayer). Exiting.");
+        VVV_exit(1);
+    }
 
     if(!FILESYSTEM_init(argv[0], baseDir, assetsPath, langDir, fontsDir))
     {
@@ -616,6 +650,12 @@ int main(int argc, char *argv[])
 
     game.init();
     game.seed_use_sdl_getticks = seed_use_sdl_getticks;
+
+    if (ap_file != "") {
+        V6AP_Init(ap_file.c_str());
+    } else {
+        V6AP_Init(ip.c_str(),name.c_str(),passwd.c_str());
+    }
 
     game.gamestate = PRELOADER;
 

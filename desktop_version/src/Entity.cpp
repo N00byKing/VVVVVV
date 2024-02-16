@@ -17,6 +17,8 @@
 #include "Vlogging.h"
 #include "Xoshiro.h"
 
+#include "v6ap.h"
+
 static int getgridpoint( int t )
 {
     return t / 8;
@@ -1539,7 +1541,8 @@ void entityclass::createentity(int xp, int yp, int t, int meta1, int meta2, int 
 
         //Check if it's already been collected
         entity.para = meta1;
-        if (!INBOUNDS_ARR(meta1, collect) || collect[meta1]) return;
+        if (meta1 >= V6AP_NUM_CHECKS) return;
+        if (V6AP_Locations()[meta1]) return;
         break;
     case 10: //Savepoint
         entity.rule = 3;
@@ -2669,17 +2672,13 @@ bool entityclass::updateentities( int i )
             //wait for collision
             if (entities[i].state == 1)
             {
-                if (INBOUNDS_ARR(entities[i].para, collect))
-                {
-                    collect[(int) entities[i].para] = true;
-                }
-
                 if (game.intimetrial)
                 {
                     music.playef(Sound_NEWRECORD);
                 }
                 else
                 {
+                    V6AP_SendItem(entities[i].para);
                     game.setstate(1000);
                     if(music.currentsong!=-1) music.silencedasmusik();
                     music.playef(Sound_TRINKET);

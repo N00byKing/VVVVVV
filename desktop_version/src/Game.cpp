@@ -34,6 +34,8 @@
 #include "Vlogging.h"
 #include "XMLUtils.h"
 
+#include "v6ap.h"
+
 static bool GetButtonFromString(const char *pText, SDL_GameControllerButton *button)
 {
     if (*pText == '0' ||
@@ -1032,7 +1034,7 @@ void foundtrinket_textbox2(textboxclass* THIS)
         buffer, sizeof(buffer),
         loc::gettext("{n_trinkets|wordy} out of {max_trinkets|wordy}"),
         "n_trinkets:int, max_trinkets:int",
-        game.trinkets(), max_trinkets
+        game.trinkets()+1, max_trinkets
     );
     THIS->lines.push_back(buffer);
 
@@ -1252,6 +1254,12 @@ void Game::updatestate(void)
                 /* Prevent softlocks if there's no cutscene running right now */
                 hascontrol = true;
                 completestop = false;
+
+                if (V6AP_ItemPending()) { //Receive Items from Archipelago
+                    state = 1000;
+                } else { // If not, we can show the next message
+                    V6AP_PrintNext();
+                }
             }
             break;
         case 1:
@@ -2407,6 +2415,7 @@ void Game::updatestate(void)
                 music.fadeMusicVolumeIn(3000);
             }
             graphics.showcutscenebars = false;
+            V6AP_RecvClear(); // Clear one item
             break;
 
         case 1010:
@@ -3164,6 +3173,7 @@ void Game::updatestate(void)
             //Game complete!
             unlockAchievement("vvvvvvgamecomplete");
             unlocknum(UnlockTrophy_GAME_COMPLETE);
+            V6AP_StoryComplete();
             crewstats[0] = true;
             incstate();
             setstatedelay(75);
@@ -7511,15 +7521,7 @@ void Game::resetgameclock(void)
 
 int Game::trinkets(void)
 {
-    int temp = 0;
-    for (size_t i = 0; i < SDL_arraysize(obj.collect); i++)
-    {
-        if (obj.collect[i])
-        {
-            temp++;
-        }
-    }
-    return temp;
+    return V6AP_GetTrinkets();
 }
 
 int Game::crewmates(void)

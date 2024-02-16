@@ -28,6 +28,9 @@
 #include "UtilityClass.h"
 #include "VFormat.h"
 
+#include <string>
+#include "v6ap.h"
+
 static int tr;
 static int tg;
 static int tb;
@@ -2849,7 +2852,7 @@ static void rendermaplegend(void)
     {
         for (size_t i = 0; i < map.shinytrinkets.size(); i++)
         {
-            if (!obj.collect[i])
+            if (!V6AP_Locations()[i])
             {
                 font::print(PR_FONT_8X8 | PR_FULLBOR, data.legendxoff + (map.shinytrinkets[i].x * 12 * data.zoom), data.legendyoff + (map.shinytrinkets[i].y * 9 * data.zoom), "🪙", 254, 252, 58);
             }
@@ -3192,6 +3195,24 @@ void maprender(void)
 
         font::print(PR_CEN | FLIP_PR_CJK_HIGH, -1, FLIP(102, 8), loc::gettext("[Number of Deaths]"), 196, 196, 255 - help.glow);
         font::print(PR_CEN | FLIP_PR_CJK_LOW, -1, FLIP(114, 8), help.String(game.deathcounts), 96, 96, 96);
+
+        if(V6AP_GetTrinkets() > 0) {
+            std::string out("(");
+            int c = 0;
+            for (int i = 0; i < V6AP_NUM_CHECKS; i++) {
+                if (V6AP_Trinkets()[i]) {
+                    if (c < V6AP_GetTrinkets()-1) {
+                        out += std::to_string(i+1) + ",";
+                        c++;
+                    } else {
+                        out += std::to_string(i+1) + ")";
+                        c++;
+                        break;
+                    }
+                }
+            }
+            font::print(PR_CEN | FLIP_PR_CJK_HIGH, -1, FLIP(76, 8), out, 96, 96, 96);
+        }
 
         font::print(PR_CEN | FLIP_PR_CJK_HIGH, -1, FLIP(152, 8), loc::gettext("[Time Taken]"), 196, 196, 255 - help.glow);
         font::print(PR_CEN | FLIP_PR_CJK_LOW, -1, FLIP(164, 8), game.timestring(), 96, 96, 96);

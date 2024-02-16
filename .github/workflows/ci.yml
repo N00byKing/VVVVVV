@@ -1,24 +1,7 @@
 name: CI
 
-# Only trigger workflow when code changes, or this file is changed.
-# Android has a different workflow and different rules.
-on:
-  push:
-    paths:
-      - "desktop_version/CMakeLists.txt"
-      - "desktop_version/src/**.cpp"
-      - "desktop_version/src/**.c"
-      - "desktop_version/src/**.h"
-      - "third_party/**"
-      - ".github/workflows/ci.yml"
-  pull_request:
-    paths:
-      - "desktop_version/CMakeLists.txt"
-      - "desktop_version/src/**.cpp"
-      - "desktop_version/src/**.c"
-      - "desktop_version/src/**.h"
-      - "third_party/**"
-      - ".github/workflows/ci.yml"
+# Trigger this workflow on push or pull request
+on: [push, pull_request]
 
 env:
   SRC_DIR_PATH: desktop_version
@@ -36,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       with:
-        submodules: true
+        submodules: 'recursive'
 
     - name: Install dependencies
       run: brew install ninja sdl2
@@ -47,27 +30,16 @@ jobs:
         cmake -GNinja ..
     - name: Build (default version)
       run: ninja -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (official)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -DOFFICIAL_BUILD=ON ..
-    - name: Build (official)
-      run: |
-        ninja -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (M&P)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -DOFFICIAL_BUILD=OFF -DMAKEANDPLAY=ON ..
-    - name: Build (M&P)
-      run: ninja -C ${SRC_DIR_PATH}/build
+    - name: Create Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: V6AP-macos
+        path: ${{env.SRC_DIR_PATH}}/build/VVVVVV
 
   build-lin:
-    name: Build (CentOS 7)
+    name: Build (ubuntu-latest)
 
     runs-on: ubuntu-latest
-    container: ghcr.io/infoteddy/vvvvvv-build@sha256:50a2f769db3ca180286e9a76c1bf06b7016544a78e1fc7a9a0cc1144c675ced1
 
     env:
       CXXFLAGS: -I/usr/local/include/SDL2
@@ -76,7 +48,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       with:
-        submodules: true
+        submodules: 'recursive'
 
     - name: CMake configure (default version)
       run: |
@@ -84,21 +56,11 @@ jobs:
         cmake ..
     - name: Build (default version)
       run: make -j $(nproc) -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (official)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -DOFFICIAL_BUILD=ON ..
-    - name: Build (official)
-      run: |
-        make -j $(nproc) -C ${SRC_DIR_PATH}/build
-
-    - name: CMake configure (M&P)
-      run: |
-        cd ${SRC_DIR_PATH}/build
-        cmake -DOFFICIAL_BUILD=OFF -DMAKEANDPLAY=ON ..
-    - name: Build (M&P)
-      run: make -j $(nproc) -C ${SRC_DIR_PATH}/build
+    - name: Create Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: V6AP-linux
+        path: ${{env.SRC_DIR_PATH}}/build/VVVVVV
 
   build-win:
     name: Build (windows-latest)
@@ -106,72 +68,52 @@ jobs:
     runs-on: windows-latest
 
     env:
-      SDL_VERSION: 2.24.0
+      SDL_VERSION: 2.0.22
 
     steps:
     - uses: actions/checkout@v1
       with:
-        submodules: true
+        submodules: 'recursive'
 
     - name: Cache SDL
-      id: cache-windows-sdl
-      uses: actions/cache@v3
+      uses: actions/cache@v2
       env:
         cache-name: cache-sdl
       with:
-        path: C:\SDL2-*
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.SDL_VERSION }}
+        path: C:\SDL
+        key: ${{ runner.os }}-build-${{ env.cache-name }}
 
-    - if: ${{ steps.cache-windows-sdl.outputs.cache-hit != 'true' }}
-      name: Download SDL if not cached
+    - name: Download SDL if not cached
       run: |
-        Invoke-WebRequest "https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION/SDL2-devel-$env:SDL_VERSION-VC.zip" -OutFile C:\SDL.zip
-        Expand-Archive C:\SDL.zip -DestinationPath C:\
+        if (-Not (Test-Path C:\SDL))
+        {
+          Invoke-WebRequest "https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION/SDL2-devel-$env:SDL_VERSION-VC.zip" -o C:\SDL.zip
+          Expand-Archive C:\SDL.zip -DestinationPath C:\
+        }
 
-    - name: Cache build folder for this CMakeLists.txt
-      id: cache-windows-build-folder
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-windows-build-folder-VS2022
-      with:
-        path: |
-          desktop_version/build
-          desktop_version/CMakeLists.txt
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('desktop_version/CMakeLists.txt') }}-SDL${{ env.SDL_VERSION }}
-
-    - if: ${{ steps.cache-windows-build-folder.outputs.cache-hit != 'true' }}
-      name: CMake initial configure/generate
+    - name: CMake configure (default version)
       run: |
         mkdir $env:SRC_DIR_PATH/build
         cd $env:SRC_DIR_PATH/build
         $env:LDFLAGS =  "/LIBPATH:C:\SDL2-$env:SDL_VERSION\lib\x86 "
         cmake -G "Visual Studio 17 2022" -A Win32 `
               -DSDL2_INCLUDE_DIRS="C:\SDL2-$env:SDL_VERSION\include" `
-              -DSDL2_LIBRARIES="SDL2;SDL2main" ..
-
-    - name: CMake configure (default version)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake ..
+              -DSDL2_LIBRARIES="SDL2;SDL2main" `
+              -DUSE_ZLIB=OFF `
+              -DCMAKE_BUILD_TYPE=Release ..
     - name: Build (default version)
       run: |
         cd $env:SRC_DIR_PATH/build
-        cmake --build .
+        cmake --build . --config Release
 
-    - name: CMake configure (official)
+    - name: Create Artifact Folder
       run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake -DOFFICIAL_BUILD=ON ..
-    - name: Build (official)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake --build .
-
-    - name: CMake configure (M&P)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake -DOFFICIAL_BUILD=OFF -DMAKEANDPLAY=ON ..
-    - name: Build (M&P)
-      run: |
-        cd $env:SRC_DIR_PATH/build
-        cmake --build .
+        mkdir artifact
+        copy ${{env.SRC_DIR_PATH}}/build/Release/VVVVVV.exe artifact
+        copy ${{env.SRC_DIR_PATH}}/build/apcppout/Release/APCpp.dll artifact
+    - name: Create Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: V6AP-win
+        path: |
+          artifact/*

@@ -26,6 +26,8 @@
 #include "Vlogging.h"
 #include "Xoshiro.h"
 
+#include "v6ap.h"
+
 scriptclass::scriptclass(void)
 {
     position = 0;
@@ -1802,9 +1804,8 @@ void scriptclass::run(void)
                 music.playef(Sound_TRINKET);
 
                 size_t trinket = ss_toi(words[1]);
-                if (trinket < SDL_arraysize(obj.collect))
-                {
-                    obj.collect[trinket] = true;
+                if (trinket == 18) {
+                    V6AP_SendItem(18); //NPC Trinket gets special case
                 }
 
                 graphics.textboxremovefast();

@@ -1,3 +1,4 @@
+#include "v6ap.h"
 #include "Credits.h"
 #include "Entity.h"
 #include "Enums.h"
@@ -361,8 +362,16 @@ void gamelogic(void)
 
     graphics.kludgeswnlinewidth = false;
 
-    if (game.deathseq != -1)
+    if (game.deathseq != -1 || (V6AP_DeathLinkPending() && game.state == 0))
     {
+
+        if (V6AP_DeathLinkPending() && game.deathseq == -1) { // They died
+            game.deathseq = 30;
+            V6AP_DeathLinkClear();
+        } else if (!V6AP_DeathLinkPending() && game.deathseq == 30) { // We died
+            V6AP_DeathLinkSend();
+        }
+
         if (map.towermode)
         {
             map.colsuperstate = 1;

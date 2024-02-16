@@ -16,3 +16,6 @@
 [submodule "third_party/SheenBidi"]
 	path = third_party/SheenBidi
 	url = https://github.com/Tehreer/SheenBidi
+[submodule "third_party/APCpp"]
+	path = third_party/APCpp
+	url = https://github.com/N00byKing/APCpp
