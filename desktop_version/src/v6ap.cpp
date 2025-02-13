@@ -176,7 +176,9 @@ void V6AP_PrintNext() {
 }
 
 void V6AP_AdjustMusic(int* x) {
-    *x = map_music.at(*x);
+    if (map_music.count(*x)) {
+        *x = map_music[*x];
+    }
 }
 
 int V6AP_PlayerIsEnteringArea(int x, int y) {
