@@ -67,6 +67,13 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - uses: libsdl-org/setup-sdl@main
+      id: sdl
+      with:
+        install-linux-dependencies: true
+        version: 2-latest
+        version-sdl-image: 2-latest
+
     - name: CMake configure (default version)
       run: |
         mkdir ${SRC_DIR_PATH}/build && cd ${SRC_DIR_PATH}/build
