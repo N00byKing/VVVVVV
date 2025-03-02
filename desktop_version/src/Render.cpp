@@ -3224,7 +3224,7 @@ void maprender(void)
                     }
                 }
             }
-            font::print(PR_CEN | FLIP_PR_CJK_HIGH, 0, FLIP(76, 8), out, 96, 96, 96);
+            font::print(PR_CEN | FLIP_PR_CJK_LOW, -1, FLIP(76, 8), out, 96, 96, 96);
         }
 
         font::print(PR_CEN | FLIP_PR_CJK_HIGH, -1, FLIP(152, 8), loc::gettext("[Time Taken]"), 196, 196, 255 - help.glow);
