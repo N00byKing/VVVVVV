@@ -1757,7 +1757,8 @@ void entityclass::createentity(int xp, int yp, int t, int meta1, int meta2, int 
 
         //Check if it's already been collected
         entity.para = meta1;
-        if (INBOUNDS_ARR(meta1, collect) && !collect[meta1]) return;
+        if (meta1 >= V6AP_NUM_CHECKS) return;
+        if (!V6AP_Trinkets()[meta1]) return;
         break;
     case 23: //SWN Enemies
         //Given a different behavior, these enemies are especially for SWN mode and disappear outside the screen.
