@@ -199,6 +199,7 @@ else()
         ../third_party/c-hashmap
         ../third_party/FAudio/src
         ../third_party/SheenBidi/Headers
+        ../third_party/APCpp
     )
 endif()
 
