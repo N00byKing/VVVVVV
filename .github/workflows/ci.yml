@@ -57,29 +57,19 @@ jobs:
     name: Build (ubuntu-latest)
 
     runs-on: ubuntu-latest
-
-    env:
-      CXXFLAGS: -I/usr/local/include/SDL2
-      LDFLAGS: -L/usr/local/lib
+    container: registry.gitlab.steamos.cloud/steamrt/sniper/sdk:beta
 
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
-    - uses: libsdl-org/setup-sdl@main
-      id: sdl
-      with:
-        install-linux-dependencies: true
-        version: 2-latest
-        version-sdl-image: 2-latest
-
     - name: CMake configure (default version)
       run: |
         mkdir ${SRC_DIR_PATH}/build && cd ${SRC_DIR_PATH}/build
         cmake -G Ninja ..
     - name: Build (default version)
-      run: make -j $(nproc) -C ${SRC_DIR_PATH}/build
+      run: ninja -C ${SRC_DIR_PATH}/build
     - name: Create Build Artifact
       uses: actions/upload-artifact@v4
       with:
